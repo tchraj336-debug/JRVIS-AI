@@ -26,11 +26,21 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Extract Android Project
+        run: |
+          unzip -q JARVIS_AI_Phase2_v0.2.zip -d extracted
+          PROJECT_DIR=$(dirname "$(find extracted -name settings.gradle.kts -print -quit)")
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "Gradle project not found in ZIP"
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+
       - name: Build APK
-        run: gradle :app:assembleDebug
+        run: gradle -p "$PROJECT_DIR" :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: JARVIS-AI-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: extracted/**/app/build/outputs/apk/debug/app-debug.apk
